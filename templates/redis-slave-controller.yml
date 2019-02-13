@@ -23,8 +23,8 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:v1.0.0
-          imagePullPolicy: Always
+          image: redis:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
               protocol: TCP
