@@ -8,7 +8,7 @@ COPY redis-image/redis-slave.conf /redis-slave/redis.conf
 COPY redis-image/run.sh /run.sh
 RUN chmod +x /run.sh
 
-EXPOSE 26379
+EXPOSE 6379 26379
 
 CMD [ "/run.sh" ]
 
