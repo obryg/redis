@@ -9,7 +9,7 @@ RUN set -x \
 
 COPY image/redis-master.conf /redis-master/redis.conf
 COPY image/redis-slave.conf /redis-slave/redis.conf
-COPY run.sh /run.sh
+COPY image/run.sh /run.sh
 RUN chmod +x /run.sh
 
 CMD [ "/run.sh" ]
