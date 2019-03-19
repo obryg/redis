@@ -9,8 +9,8 @@ metadata:
 spec:
   containers:
     - name: master
-      image: redis:latest
-      imagePullPolicy: IfNotPresent
+      image: redis:v1.0.0
+      imagePullPolicy: Always
       ports:
         - containerPort: 6379
           protocol: TCP
@@ -25,8 +25,8 @@ spec:
         - mountPath: /redis-master-data
           name: data
     - name: sentinel
-      image: redis:latest
-      imagePullPolicy: IfNotPresent
+      image: redis:v1.0.0
+      imagePullPolicy: Always
       ports:
         - containerPort: 26379
           protocol: TCP

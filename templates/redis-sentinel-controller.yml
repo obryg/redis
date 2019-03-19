@@ -26,8 +26,8 @@ spec:
     spec:
       containers:
         - name: sentinel
-          image: redis:latest
-          imagePullPolicy: IfNotPresent
+          image: redis:v1.0.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 26379
               protocol: TCP
