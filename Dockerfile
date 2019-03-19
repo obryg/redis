@@ -17,8 +17,8 @@ FROM alpine:3.7
 RUN set -x \
 	&& sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
 	&& apk add --no-cache redis sed bash tzdata \
-	&& cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone \
+	&& cp /usr/share/zoneinfo/UTC /etc/localtime \
+    && echo "UTC" > /etc/timezone \
     && apk del --no-cache tzdata
 
 COPY redis-image/redis-master.conf /redis-master/redis.conf
@@ -26,7 +26,7 @@ COPY redis-image/redis-slave.conf /redis-slave/redis.conf
 COPY redis-image/run.sh /run.sh
 RUN chmod +x /run.sh
 
-EXPOSE 6379 26379
+#EXPOSE 6379 26379
 
 CMD [ "/run.sh" ]
 
