@@ -1,18 +1,23 @@
-FROM alpine:3.8
+FROM openshift/centos:7
 
-RUN set -x \
-	&& sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
-	&& apk add --no-cache redis sed bash tzdata \
-	&& cp /usr/share/zoneinfo/UTC /etc/localtime \
-    && echo "UTC" > /etc/timezone \
-    && apk del --no-cache tzdata
+RUN set -xe; \
+    yum install -y epel-release; \
+    yum install -y redis nc bind-utils; \
+    yum clean all;
 
-RUN mkdir -p /redis-master && mkdir /redis-slave
-COPY image/redis-master.conf /redis-master/redis.conf
-COPY image/redis-slave.conf /redis-slave/redis.conf
-COPY image/run.sh /run.sh
-RUN chmod +x /run.sh
+ADD config/redis-sentinel.conf /etc/redis-sentinel.conf
+ADD config/redis.conf /etc/redis.conf
+ADD config/redis-slave.conf /etc/redis-slave.conf
+ADD config/startup.sh /startup.sh
+ADD config/fix-permissions /usr/local/bin/fix-permissions
 
-CMD [ "/run.sh" ]
+RUN chmod +x /startup.sh
+RUN chmod +x /usr/local/bin/fix-permissions
 
-ENTRYPOINT [ "bash", "-c" ]
+EXPOSE 26379 6379
+ENTRYPOINT ["/startup.sh"]
+RUN set -xe ;\
+    fix-permissions /var/lib/redis; \
+    fix-permissions /etc;
+USER 1001
+CMD ["redis-server", "/etc/redis.conf"]

@@ -1,23 +1,18 @@
-# openshift-redis
-OpenShift Redis Cluster
+# Redis Master, Slaves, Sentinels Statefulset Docker image
 
+To be able to launch master, slave and sentinels in Kubernetes or OpenShift, we previously need to start a master, then slaves and sentinels, and to remove the master.
 
-# Create a bootstrap master
-oc create -f redis-master-pod.yaml
+That image is able to startup in Statefulset mode.
 
-# Create a service to track the sentinels
-oc create -f redis-sentinel-service.yaml
+The first redis server that starts is the Master. Others will be slaves. If master pod is down, so Sentinels elect an new Master.
 
-# Create a replication controller for redis servers
-oc create -f redis-slave-controller.yaml
+That image can be used with Redis-Ellison: https://github.com/metal3d/redis-ellison
 
-# Create a replication controller for redis sentinels
-oc create -f redis-sentinel-controller.yaml
+See [](project.yml) that is an example of making that image working as Statefulset.
 
-# Scale both replication controllers
-oc scale rc redis --replicas=3
-oc scale rc redis-sentinel --replicas=3
+# Rule them all with Ellison
 
-# Delete the original master pod
-# Note: If you are running all the above commands consecutively including this one in a shell script, it may NOT work out. When you run the above commands, let the pods first come up, especially the redis-master pod. Else, the sentinel pods would never be able to know the master redis server and establish a connection with it.
-oc delete pods redis-master
+Ellison is a project built by a Smile Lab temate, it's a proxy that allows usage of redis without the need of using Sentinels requests to find the master.
+
+Simply give to Ellison the name of you Redis-HA service that is in the example project.yml
+
