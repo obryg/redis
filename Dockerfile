@@ -4,7 +4,7 @@ RUN set -xe; \
     yum install -y epel-release; \
     yum install -y wget nc bind-utils; \
     rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm; \   
-    yum --enablerepo=remi install redis; \   
+    yum -y --enablerepo=remi install redis; \   
     yum clean all;
 
 ADD config/redis-sentinel.conf /etc/redis-sentinel.conf
