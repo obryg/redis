@@ -7,6 +7,7 @@ RUN set -x \
     && echo "UTC" > /etc/timezone \
     && apk del --no-cache tzdata
 
+RUN mkdir -p /redis-master && mkdir /redis-slave
 COPY image/redis-master.conf /redis-master/redis.conf
 COPY image/redis-slave.conf /redis-slave/redis.conf
 COPY image/run.sh /run.sh
