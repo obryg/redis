@@ -16,14 +16,14 @@ if [ "$MODE" == "statefulset" ] && [ "$SENTINEL" != "true" ] ; then
     SENTINEL_HOST="127.0.0.1"
     until [ "$CONN" == "ok" ]; do
         echo "wait for sentinel..."
-        nc --send-only $SENTINEL_HOST 26379 < /dev/null && CONN="ok" || sleep 1
+        nc $SENTINEL_HOST 26379 < /dev/null && CONN="ok" || sleep 1
     done
 
     CONN=""
     until [ "$CONN" == "ok" ]; do
         master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name redismaster | head -n1)
         echo "master is: ${master}, checking..."
-        nc --send-only $master 6379 < /dev/null && CONN="ok" || sleep 1
+        nc $master 6379 < /dev/null && CONN="ok" || sleep 1
     done
 
     # let's change the state
@@ -42,7 +42,7 @@ if [ "$SENTINEL" == "true" ]; then
         # check that master is up
         CONN=""
         until [ "$CONN" == "ok" ]; do
-            nc --send-only $h 6379 < /dev/null && CONN="ok" || sleep 1
+            nc $h 6379 < /dev/null && CONN="ok" || sleep 1
         done
     fi
 
@@ -64,14 +64,14 @@ if [ "$SLAVE" == "true" ]; then
     [ "$SENTINEL_HOST" == "" ] && SENTINEL_HOST="127.0.0.1"
     until [ "$CONN" == "ok" ]; do
         echo "Waiting sentinel ${SENTINEL_HOST}..."
-        nc --send-only $SENTINEL_HOST 26379 < /dev/null && CONN="ok" || sleep 1
+        nc $SENTINEL_HOST 26379 < /dev/null && CONN="ok" || sleep 1
     done
 
     CONN=""
     until [ "$CONN" == "ok" ]; do
         master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name redismaster | head -n1)
         echo "master is: ${master}, checking..."
-        nc --send-only $master 6379 < /dev/null && CONN="ok" || sleep 1
+        nc $master 6379 < /dev/null && CONN="ok" || sleep 1
     done
 
     sed -i 's/^slaveof master 6379/slaveof '${master}' 6379/' /etc/redis-slave.conf
