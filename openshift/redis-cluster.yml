@@ -45,6 +45,10 @@ objects:
           env:
           - name: MODE
             value: statefulset
+          - name: ALLOW_EMPTY_PASSWORD
+            value: 'yes'
+          - name: REDIS_EXTRA_FLAGS
+            value: '--maxmemory 4096mb --maxmemory-policy volatile-lru'	  
           ports:
           - containerPort: 6379
             name: peer
