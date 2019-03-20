@@ -61,3 +61,6 @@ objects:
             name: sentinel
         updateStrategy:
           type: RollingUpdate
+        restartPolicy: Always
+        securityContext:
+          runAsUser: 1001
