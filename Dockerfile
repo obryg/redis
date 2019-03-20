@@ -3,7 +3,7 @@ FROM centos:7
 RUN set -xe; \
     yum install -y epel-release; \
     yum install -y wget nc bind-utils; \
-    yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm \   
+    rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm \   
     yum --enablerepo=remi install redis; \   
     yum clean all;
 
