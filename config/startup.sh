@@ -1,82 +1,81 @@
 #!/bin/bash
 
-# Openshift Mode
-if [ "$MODE" == "statefulset" ] && [ "$SENTINEL" != "true" ] ; then
+# Copyright 2014 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-    # first statefulset pod is a master
-    h=$(hostname)
-    if [ $(echo "$h" | grep -o '\-0$') == "-0" ]; then
-        echo "Master mode"
-        exec "$@"
+function launchmaster() {
+  redis-server /etc/redis.conf --protected-mode no
+}
+
+function launchsentinel() {
+  while true; do
+    master=$(redis-cli -h ${REDIS_SENTINEL_SERVICE_HOST} -p ${REDIS_SENTINEL_SERVICE_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
+    if [[ -n ${master} ]]; then
+      master="${master//\"}"
+    else
+      master=$(hostname -i)
     fi
 
-
-    # else it's a slave (sentinel will start, so wait for it)
-    CONN=""
-    SENTINEL_HOST="127.0.0.1"
-    until [ "$CONN" == "ok" ]; do
-        echo "wait for sentinel..."
-        nc $SENTINEL_HOST 26379 < /dev/null && CONN="ok" || sleep 1
-    done
-
-    CONN=""
-    until [ "$CONN" == "ok" ]; do
-        master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name redismaster | head -n1)
-        echo "master is: ${master}, checking..."
-        nc $master 6379 < /dev/null && CONN="ok" || sleep 1
-    done
-
-    # let's change the state
-    sed -i 's/^slaveof master 6379/slaveof '${master}' 6379/' /etc/redis-slave.conf
-    exec redis-server /etc/redis-slave.conf
-fi
-
-# else, startup as expected
-
-if [ "$SENTINEL" == "true" ]; then
-    echo "Sentinel mode"
-    if [ "$MODE" == "statefulset" ]; then
-        # we change xxx-1 to xxx-0 that is the master pod
-        h=$(hostname -f | sed -r 's/-[0-9]+/-0/')
-        sed -i 's/monitor mymaster master/monitor redismaster '$h'/' /etc/redis-sentinel.conf 
-        # check that master is up
-        CONN=""
-        until [ "$CONN" == "ok" ]; do
-            nc $h 6379 < /dev/null && CONN="ok" || sleep 1
-        done
+    redis-cli -h ${master} INFO
+    if [[ "$?" == "0" ]]; then
+      break
     fi
+    echo "Connecting to master failed.  Waiting..."
+    sleep 10
+  done
 
-    exec redis-sentinel /etc/redis-sentinel.conf
+  sentinel_conf=/etc/redis-sentinel.conf
+
+  echo "sentinel monitor mymaster ${master} 6379 2" > ${sentinel_conf}
+  echo "sentinel down-after-milliseconds mymaster 60000" >> ${sentinel_conf}
+  echo "sentinel failover-timeout mymaster 180000" >> ${sentinel_conf}
+  echo "sentinel parallel-syncs mymaster 1" >> ${sentinel_conf}
+  echo "bind 0.0.0.0" >> ${sentinel_conf}
+
+  redis-sentinel ${sentinel_conf} --protected-mode no
+}
+
+function launchslave() {
+  while true; do
+    master=$(redis-cli -h ${REDIS_SENTINEL_SERVICE_HOST} -p ${REDIS_SENTINEL_SERVICE_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
+    if [[ -n ${master} ]]; then
+      master="${master//\"}"
+    else
+      echo "Failed to find master."
+      sleep 60
+      exit 1
+    fi 
+    redis-cli -h ${master} INFO
+    if [[ "$?" == "0" ]]; then
+      break
+    fi
+    echo "Connecting to master failed.  Waiting..."
+    sleep 10
+  done
+  sed -i "s/%master-ip%/${master}/" /etc/redis.conf
+  sed -i "s/%master-port%/6379/" /etc/redis.conf
+  redis-server /etc/redis.conf --protected-mode no
+}
+
+if [[ "${MASTER}" == "true" ]]; then
+  launchmaster
+  exit 0
 fi
 
-
-# this case should not happend in openshift
-if [ "$SLAVE" == "true" ]; then
-    # if we're on kubernetes/openshift, the sentinel should be running as
-    # a container in the same pod. So that sentinel addr is 127.0.0.1
-    # But we can provide a sentinel hostname in $SENTINEL_HOST to force
-    # in docker-compose for example.
-    # Because the initial master will be down, we need to get master address
-    # via sentinel
-
-    echo "Slave mode"
-    CONN=""
-    [ "$SENTINEL_HOST" == "" ] && SENTINEL_HOST="127.0.0.1"
-    until [ "$CONN" == "ok" ]; do
-        echo "Waiting sentinel ${SENTINEL_HOST}..."
-        nc $SENTINEL_HOST 26379 < /dev/null && CONN="ok" || sleep 1
-    done
-
-    CONN=""
-    until [ "$CONN" == "ok" ]; do
-        master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name redismaster | head -n1)
-        echo "master is: ${master}, checking..."
-        nc $master 6379 < /dev/null && CONN="ok" || sleep 1
-    done
-
-    sed -i 's/^slaveof master 6379/slaveof '${master}' 6379/' /etc/redis-slave.conf
-    exec redis-server /etc/redis-slave.conf
-
+if [[ "${SENTINEL}" == "true" ]]; then
+  launchsentinel
+  exit 0
 fi
 
-exec "$@"
+launchslave
