@@ -1,50 +1,59 @@
+kind: Template
 apiVersion: v1
-kind: Service
 metadata:
   annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  name: redis
-  labels:
-    app: redis
-spec:
-  ports:
-  - port: 6379
-    name: peer
-  # *.redis.default.svc.cluster.local
-  clusterIP: None
-  selector:
-    app: redis
----
-apiVersion: apps/v1beta1
-kind: StatefulSet
-metadata:
-  name: rd
-spec:
-  serviceName: "redis"
-  replicas: 3
-  template:
-    metadata:
-      labels:
-        app: redis
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
-    spec:
-      containers:
-      - name: redis-slave
-        image: 172.30.1.1:5000/openshift/redis:latest
-        env:
-        - name: MODE
-          value: statefulset
-        ports:
-        - containerPort: 6379
-          name: peer
-      - name: redis-sentinel
-        image: 172.30.1.1:5000/openshift/redis:latest
-        env:
-        - name: MODE
-          value: statefulset
-        - name: SENTINEL
-          value: "true"
-        ports:
-        - containerPort: 26379
-          name: sentinel
+    iconClass: icon-redis
+    openshift.io/display-name: Redis Sentinel Cluster
+    tags: database,redis
+    template.openshift.io/provider-display-name: ucb
+  name: redis-cluster
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    name: redis-cluster
+    labels:
+      app: redis
+  spec:
+    ports:
+    - port: 6379
+      name: peer
+    # *.redis.default.svc.cluster.local
+    clusterIP: None
+    selector:
+      app: redis
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
+  metadata:
+    name: redis-cluster
+  spec:
+    serviceName: "redis-cluster"
+    replicas: 3
+    template:
+      metadata:
+        labels:
+          app: redis
+        annotations:
+          pod.alpha.kubernetes.io/initialized: "true"
+      spec:
+        containers:
+        - name: redis-slave
+          image: 172.30.1.1:5000/openshift/redis:latest
+          env:
+          - name: MODE
+            value: statefulset
+          ports:
+          - containerPort: 6379
+            name: peer
+        - name: redis-sentinel
+          image: 172.30.1.1:5000/openshift/redis:latest
+          env:
+          - name: MODE
+            value: statefulset
+          - name: SENTINEL
+            value: "true"
+          ports:
+          - containerPort: 26379
+            name: sentinel
