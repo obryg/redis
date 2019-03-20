@@ -3,7 +3,7 @@ FROM openshift/alpine:3.8
 RUN set -x \
 	&& sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
 	&& apk add --no-cache redis sed bash tzdata \
-	&& cp /usr/share/zoneinfo/Asia/UTC /etc/localtime \
+	&& cp /usr/share/zoneinfo/UTC /etc/localtime \
     && echo "UTC" > /etc/timezone \
     && apk del --no-cache tzdata
 
