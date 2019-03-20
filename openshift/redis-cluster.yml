@@ -63,8 +63,9 @@ objects:
           ports:
           - containerPort: 26379
             name: sentinel
-        updateStrategy:
-          type: RollingUpdate
+        terminationGracePeriodSeconds: 30
         restartPolicy: Always
         securityContext:
           runAsUser: 1001
+        updateStrategy:
+          type: RollingUpdate
