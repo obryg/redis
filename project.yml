@@ -40,7 +40,8 @@ objects:
       spec:
         containers:
         - name: redis-slave
-          image: 172.30.1.1:5000/openshift/redis:latest
+          image: "172.30.1.1:5000/openshift/redis:latest"
+          imagePullPolicy: IfNotPresent
           env:
           - name: MODE
             value: statefulset
@@ -48,7 +49,8 @@ objects:
           - containerPort: 6379
             name: peer
         - name: redis-sentinel
-          image: 172.30.1.1:5000/openshift/redis:latest
+          image: "172.30.1.1:5000/openshift/redis:latest"
+          imagePullPolicy: IfNotPresent
           env:
           - name: MODE
             value: statefulset
@@ -57,3 +59,5 @@ objects:
           ports:
           - containerPort: 26379
             name: sentinel
+        updateStrategy:
+          type: RollingUpdate
