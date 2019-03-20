@@ -17,7 +17,6 @@ RUN chmod +x /usr/local/bin/fix-permissions
 EXPOSE 26379 6379
 ENTRYPOINT ["/startup.sh"]
 RUN set -xe ;\
-    fix-permissions /var/lib/redis; \
-    fix-permissions /etc;
+    fix-permissions /var/lib/redis;
 USER 1001
 CMD ["redis-server", "/etc/redis.conf"]
