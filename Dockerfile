@@ -1,6 +1,7 @@
 FROM centos:7
 
 RUN set -xe; \
+    yum install -y wget; \
     wget http://rpms.famillecollet.com/enterprise/remi-release-7.rpm; \
     rpm -Uvh remi-release-7*.rpm; \
     yum install -y redis nc bind-utils; \
