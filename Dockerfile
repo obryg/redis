@@ -7,14 +7,14 @@ FROM openshift/redis:4.0.12-alpine3.9
 #    && echo "UTC" > /etc/timezone \
 #    && apk del --no-cache tzdata
 
-ADD config/redis-sentinel.conf /etc/redis-sentinel.conf
-ADD config/redis.conf /etc/redis.conf
-ADD config/redis-slave.conf /etc/redis-slave.conf
+ADD config/redis-sentinel.conf /data/redis-sentinel.conf
+ADD config/redis.conf /data/redis.conf
+ADD config/redis-slave.conf /data/redis-slave.conf
 #ADD config/fix-permissions /usr/local/bin/fix-permissions
-ADD config/startup.sh /startup.sh
+#ADD config/startup.sh /startup.sh
 
-RUN chmod +x /startup.sh
-RUN chmod +x /usr/local/bin/fix-permissions
+#RUN chmod +x /startup.sh
+#RUN chmod +x /usr/local/bin/fix-permissions
 
 EXPOSE 26379 6379
 ENTRYPOINT ["/docker-entrypoint.sh"]
