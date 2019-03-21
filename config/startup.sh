@@ -21,7 +21,7 @@ if [ "$MODE" == "statefulset" ] && [ "$SENTINEL" != "true" ] ; then
 
     CONN=""
     until [ "$CONN" == "ok" ]; do
-        master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name mymaster | head -n1)
+        master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name stsmaster | head -n1)
         echo "master is: ${master}, checking..."
         nc --send-only $master 6379 < /dev/null && CONN="ok" || sleep 1
     done
@@ -38,7 +38,7 @@ if [ "$SENTINEL" == "true" ]; then
     if [ "$MODE" == "statefulset" ]; then
         # we change xxx-1 to xxx-0 that is the master pod
         h=$(hostname -f | sed -r 's/-[0-9]+/-0/')
-        sed -i 's/monitor mymaster master/monitor mymaster '$h'/' /etc/redis-sentinel.conf 
+        sed -i 's/monitor mymaster master/monitor stsmaster '$h'/' /etc/redis-sentinel.conf 
         # check that master is up
         CONN=""
         until [ "$CONN" == "ok" ]; do
@@ -69,7 +69,7 @@ if [ "$SLAVE" == "true" ]; then
 
     CONN=""
     until [ "$CONN" == "ok" ]; do
-        master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name mymaster | head -n1)
+        master=$(redis-cli -h $SENTINEL_HOST -p 26379 SENTINEL get-master-addr-by-name stsmaster | head -n1)
         echo "master is: ${master}, checking..."
         nc --send-only $master 6379 < /dev/null && CONN="ok" || sleep 1
     done
