@@ -7,9 +7,9 @@ FROM openshift/redis:4.0.12-alpine3.9
 #    && echo "UTC" > /etc/timezone \
 #    && apk del --no-cache tzdata
 
-ADD config/redis-sentinel.conf /usr/local/bin/redis-sentinel.conf
-ADD config/redis.conf /usr/local/bin/redis.conf
-ADD config/redis-slave.conf /usr/local/bin/redis-slave.conf
+ADD config/redis-sentinel.conf /etc/redis-sentinel.conf
+ADD config/redis.conf /etc/redis.conf
+ADD config/redis-slave.conf /etc/redis-slave.conf
 #ADD config/fix-permissions /usr/local/bin/fix-permissions
 #ADD config/startup.sh /startup.sh
 
@@ -17,9 +17,9 @@ ADD config/redis-slave.conf /usr/local/bin/redis-slave.conf
 #RUN chmod +x /usr/local/bin/fix-permissions
 
 EXPOSE 26379 6379
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 #RUN set -xe ;\
 #    fix-permissions /usr/local/bin; \
 #    fix-permissions /etc;
 USER 1001
-CMD ["redis-server", "/usr/local/bin/redis.conf"]
+CMD ["redis-server", "/etc/redis.conf"]
