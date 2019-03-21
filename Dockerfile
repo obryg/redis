@@ -17,9 +17,9 @@ RUN chmod +x /startup.sh
 RUN chmod +x /usr/local/bin/fix-permissions
 
 EXPOSE 26379 6379
-ENTRYPOINT ["/startup.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 RUN set -xe ;\
-    fix-permissions /var/lib/redis; \
+    fix-permissions /usr/local/bin; \
     fix-permissions /etc;
 USER 1001
 CMD ["redis-server", "/etc/redis.conf"]
