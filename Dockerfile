@@ -1,4 +1,4 @@
-openshift/redis:4.0.12-alpine3.9
+FROM openshift/redis:4.0.12-alpine3.9
 
 #RUN set -x \
 #	&& sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
