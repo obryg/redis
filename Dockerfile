@@ -1,12 +1,5 @@
 FROM openshift/redis:4.0.12-alpine3.9
 
-#RUN set -x \
-#	&& sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
-#	&& apk add --no-cache redis sed bash tzdata netcat-openbsd bind-tools \
-#	&& cp /usr/share/zoneinfo/UTC /etc/localtime \
-#    && echo "UTC" > /etc/timezone \
-#    && apk del --no-cache tzdata
-
 ADD config/redis-sentinel.conf /etc/redis-sentinel.conf
 ADD config/redis.conf /etc/redis.conf
 ADD config/redis-slave.conf /etc/redis-slave.conf
